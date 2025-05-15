@@ -17,6 +17,26 @@ app.use("/user", [
   },
 ]);
 
+app.use(
+  "/singleUser",
+  (req, res, next) => {
+    //Route Hander
+    console.log("route Handler");
+    next();
+  },
+  (req, res, next) => {
+    console.log("route Handler 2");
+    res.send("final response !! 2");
+  },
+  (req, res, next) => {
+    console.log("route Handler 3");
+    next();
+  },
+  (req, res, next) => {
+    console.log("route Handler 4");
+  }
+);
+
 app.listen(8080, () => {
   console.log("Hey i am Working on 8080");
 });
