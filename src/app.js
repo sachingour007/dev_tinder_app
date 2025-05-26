@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const { connectDB } = require("./config/db");
 const { User } = require("./models/user");
+const dotenv = require("dotenv").config();
 app.use(express.json());
 
 app.post("/singup", async (req, res) => {
