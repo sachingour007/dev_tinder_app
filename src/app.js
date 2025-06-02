@@ -13,7 +13,7 @@ app.post("/singup", async (req, res) => {
     res.send("user saved Succesfully!");
   } catch (error) {
     console.log(error);
-    res.status(404).send("data not Ok");
+    res.status(404).send("Somthing Went Wrong!");
   }
 });
 
