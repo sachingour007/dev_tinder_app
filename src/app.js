@@ -13,7 +13,7 @@ app.post("/singup", async (req, res) => {
     res.send("user saved Succesfully!");
   } catch (error) {
     console.log(error);
-    res.status(404).send("Somthing Went Wrong!");
+    res.status(404).send({ error: error.message });
   }
 });
 
@@ -49,6 +49,7 @@ app.patch("/user", async (req, res) => {
   const data = req.body;
 
   try {
+    const ALLOWED_UPDATES = ["photoUrl", "about"];
     const newUser = await User.findByIdAndUpdate({ _id: id }, data, {
       returnDocument: "after",
     });
