@@ -12,8 +12,7 @@ app.post("/singup", async (req, res) => {
     await user.save();
     res.send("user saved Succesfully!");
   } catch (error) {
-    console.log(error);
-    res.status(404).send({ error: error.message });
+    res.status(404).send({ Error: error.message });
   }
 });
 
@@ -24,7 +23,6 @@ app.get("/user", async (req, res) => {
     const user = await User.find();
     res.send(user);
   } catch (error) {
-    console.log(error);
     res.status(404).send("Somthing Went Wrong!");
   }
 });
@@ -44,18 +42,30 @@ app.delete("/user", async (req, res) => {
 
 //Update Api
 
-app.patch("/user", async (req, res) => {
-  const id = req.body.id;
+app.patch("/user/:id", async (req, res) => {
+  const { id } = req.params;
   const data = req.body;
 
   try {
-    const ALLOWED_UPDATES = ["photoUrl", "about"];
+    const ALLOWED_UPDATES = ["age", "gender", "skills", "photoUrl", "about"];
+    const isUpdateAllowed = Object.keys(data).every((k) =>
+      ALLOWED_UPDATES.includes(k)
+    );
+
+    if (!isUpdateAllowed) {
+      throw new Error("Update Not Allowed!");
+    }
+
+    if (data?.skills.length > 5) {
+      throw new Error("Skills cannot be more than 5");
+    }
+
     const newUser = await User.findByIdAndUpdate({ _id: id }, data, {
       returnDocument: "after",
     });
     res.send({ res: " User Update Successfully!", newUser });
   } catch (error) {
-    res.status(404).send("Somthing Went Wrong!");
+    res.status(404).send({ Error: error.message });
   }
 });
 
