@@ -2,15 +2,44 @@ const express = require("express");
 const app = express();
 const { connectDB } = require("./config/db");
 const { User } = require("./models/user");
+const bcrypt = require("bcrypt");
 const dotenv = require("dotenv").config();
+const { validationSingupData } = require("./utils/validation");
 app.use(express.json());
 
 //Post Api Singup
 app.post("/singup", async (req, res) => {
-  const user = new User(req.body);
   try {
+    //Validation
+    validationSingupData(req);
+
+    const {
+      firstName,
+      lastName,
+      emailId,
+      password,
+      age,
+      gender,
+      skills,
+      photoUrl,
+      about,
+    } = req.body;
+
+    //hash the password
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = new User({
+      firstName,
+      lastName,
+      emailId,
+      password: passwordHash,
+      age,
+      gender,
+      skills,
+      photoUrl,
+      about,
+    });
     await user.save();
-    res.send("user saved Succesfully!");
+    res.send({ res: "user saved Succesfully!", user });
   } catch (error) {
     res.status(404).send({ Error: error.message });
   }
@@ -21,7 +50,7 @@ app.post("/singup", async (req, res) => {
 app.get("/user", async (req, res) => {
   try {
     const user = await User.find();
-    res.send(user);
+    res.send({ res: "User get Succesfully", user });
   } catch (error) {
     res.status(404).send("Somthing Went Wrong!");
   }
@@ -45,7 +74,6 @@ app.delete("/user", async (req, res) => {
 app.patch("/user/:id", async (req, res) => {
   const { id } = req.params;
   const data = req.body;
-
   try {
     const ALLOWED_UPDATES = ["age", "gender", "skills", "photoUrl", "about"];
     const isUpdateAllowed = Object.keys(data).every((k) =>
@@ -62,6 +90,7 @@ app.patch("/user/:id", async (req, res) => {
 
     const newUser = await User.findByIdAndUpdate({ _id: id }, data, {
       returnDocument: "after",
+      runValidators: true,
     });
     res.send({ res: " User Update Successfully!", newUser });
   } catch (error) {
