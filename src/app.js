@@ -98,6 +98,28 @@ app.patch("/user/:id", async (req, res) => {
   }
 });
 
+//login Api
+
+app.post("/login", async (req, res) => {
+  try {
+    const { emailId, password } = req.body;
+    const userDetails = await User.findOne({ emailId });
+    if (!userDetails) {
+      throw new Error("Invalid Credentials !!");
+    }
+    const isValidPassword = await bcrypt.compare(
+      password,
+      userDetails.password
+    );
+    if (!isValidPassword) {
+      throw new Error("Invalid Credentials !! 117");
+    }
+    res.send({ res: "Login sucessfully" });
+  } catch (error) {
+    res.status(404).send({ Error: error.message });
+  }
+});
+
 connectDB()
   .then(() => {
     console.log("MongoDB is Connected");
