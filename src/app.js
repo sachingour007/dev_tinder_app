@@ -7,6 +7,7 @@ const dotenv = require("dotenv").config();
 const { validationSingupData } = require("./utils/validation");
 const jsonwebtoken = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const { userAuth } = require("./middlewares/authMiddleware");
 app.use(express.json());
 app.use(cookieParser());
 
@@ -50,7 +51,7 @@ app.post("/singup", async (req, res) => {
 
 //Get Api
 
-app.get("/user", async (req, res) => {
+app.get("/user", userAuth, async (req, res) => {
   try {
     const user = await User.find();
     res.send({ res: "User get Succesfully", user });
@@ -110,19 +111,17 @@ app.post("/login", async (req, res) => {
     if (!userDetails) {
       throw new Error("Invalid Credentials !!");
     }
-    const isValidPassword = await bcrypt.compare(
-      password,
-      userDetails.password
-    );
+    const isValidPassword = await userDetails.validatePassword(password);
+
     if (!isValidPassword) {
       throw new Error("Invalid Credentials !!");
     }
 
-    const token = await jsonwebtoken.sign(
-      { _id: userDetails._id },
-      "SachDev@123456789"
-    );
-    res.cookie("token", token);
+    const token = await userDetails.getJwt();
+    res.cookie("token", token, {
+      secure: true,
+      expires: new Date(Date.now() + 8 * 3600000),
+    });
     res.send({ res: "Login sucessfully" });
   } catch (error) {
     res.status(404).send({ Error: error.message });
@@ -131,18 +130,9 @@ app.post("/login", async (req, res) => {
 
 //Profile
 
-app.get("/profile", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
   try {
-    const cookies = req.cookies;
-    const { token } = cookies;
-    if (!token) {
-      throw new Error("Invalid Token");
-    }
-    const decodedMassge = await jsonwebtoken.verify(token, "SachDev@123456789");
-    const user = await User.findById(decodedMassge._id);
-    if (!user) {
-      throw new Error("User does not exist");
-    }
+    const user = req.user;
     res.send(user);
   } catch (error) {
     res.status(404).send({ Error: error.message });
