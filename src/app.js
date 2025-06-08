@@ -5,7 +5,10 @@ const { User } = require("./models/user");
 const bcrypt = require("bcrypt");
 const dotenv = require("dotenv").config();
 const { validationSingupData } = require("./utils/validation");
+const jsonwebtoken = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 app.use(express.json());
+app.use(cookieParser());
 
 //Post Api Singup
 app.post("/singup", async (req, res) => {
@@ -112,9 +115,35 @@ app.post("/login", async (req, res) => {
       userDetails.password
     );
     if (!isValidPassword) {
-      throw new Error("Invalid Credentials !! 117");
+      throw new Error("Invalid Credentials !!");
     }
+
+    const token = await jsonwebtoken.sign(
+      { _id: userDetails._id },
+      "SachDev@123456789"
+    );
+    res.cookie("token", token);
     res.send({ res: "Login sucessfully" });
+  } catch (error) {
+    res.status(404).send({ Error: error.message });
+  }
+});
+
+//Profile
+
+app.get("/profile", async (req, res) => {
+  try {
+    const cookies = req.cookies;
+    const { token } = cookies;
+    if (!token) {
+      throw new Error("Invalid Token");
+    }
+    const decodedMassge = await jsonwebtoken.verify(token, "SachDev@123456789");
+    const user = await User.findById(decodedMassge._id);
+    if (!user) {
+      throw new Error("User does not exist");
+    }
+    res.send(user);
   } catch (error) {
     res.status(404).send({ Error: error.message });
   }
