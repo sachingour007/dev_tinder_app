@@ -6,7 +6,7 @@ const authRouter = express.Router();
 const bcrypt = require("bcrypt");
 const { userAuth } = require("../middlewares/authMiddleware");
 
-//Sign-up Api
+//Sign-up API
 authRouter.post("/singup", async (req, res) => {
   try {
     //Validation
@@ -43,7 +43,7 @@ authRouter.post("/singup", async (req, res) => {
   }
 });
 
-//login Api
+//login API
 
 authRouter.post("/login", async (req, res) => {
   try {
@@ -69,20 +69,10 @@ authRouter.post("/login", async (req, res) => {
   }
 });
 
+//Logout API
 authRouter.post("/logout", (req, res) => {
   res.cookie("token", null, { expires: new Date(Date.now()) });
   res.send("User logout Successfull !!");
-});
-
-//Get Api
-
-authRouter.get("/user", userAuth, async (req, res) => {
-  try {
-    const user = await User.find();
-    res.send({ res: "User get Succesfully", user });
-  } catch (error) {
-    res.status(404).send("Somthing Went Wrong!");
-  }
 });
 
 //Delete Api
@@ -95,34 +85,6 @@ authRouter.delete("/user", async (req, res) => {
     res.send(" User Deleted Successfully!");
   } catch (error) {
     res.status(404).send("Somthing Went Wrong!");
-  }
-});
-
-//Update API
-authRouter.patch("/user/:id", async (req, res) => {
-  const { id } = req.params;
-  const data = req.body;
-  try {
-    const ALLOWED_UPDATES = ["age", "gender", "skills", "photoUrl", "about"];
-    const isUpdateAllowed = Object.keys(data).every((k) =>
-      ALLOWED_UPDATES.includes(k)
-    );
-
-    if (!isUpdateAllowed) {
-      throw new Error("Update Not Allowed!");
-    }
-
-    if (data?.skills.length > 5) {
-      throw new Error("Skills cannot be more than 5");
-    }
-
-    const newUser = await User.findByIdAndUpdate({ _id: id }, data, {
-      returnDocument: "after",
-      runValidators: true,
-    });
-    res.send({ res: " User Update Successfully!", newUser });
-  } catch (error) {
-    res.status(404).send({ Error: error.message });
   }
 });
 

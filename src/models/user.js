@@ -75,6 +75,8 @@ const userSchema = new mongoose.Schema(
     about: {
       type: String,
       default: "This is a default about of the user!",
+      minLength: 5,
+      maxLength: [400, "Characters need to below 400 !"],
     },
   },
   {
