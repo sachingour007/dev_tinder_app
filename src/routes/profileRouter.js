@@ -33,4 +33,14 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
   }
 });
 
+profileRouter.patch("/profile/update-password", async (req, res) => {
+  const password = req.body;
+  const {oldPassword} = password;
+  if(!oldPassword){
+    throw new Error("Please Ente valid Password")
+  }
+  
+
+});
+
 module.exports = profileRouter;
