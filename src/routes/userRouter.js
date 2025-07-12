@@ -2,6 +2,7 @@ const express = require("express");
 const userRouter = express.Router();
 const { userAuth } = require("../middlewares/authMiddleware");
 const ConnectionRequestModel = require("../models/connectionRequest");
+const { User } = require("../models/user");
 const USER_SAFE_DATA = "firstName lastName photoUrl gender age about";
 
 userRouter.get("/user/requests/received", userAuth, async (req, res) => {
@@ -45,4 +46,37 @@ userRouter.get("/user/all/connections", userAuth, async (req, res) => {
   }
 });
 
+userRouter.get("/feed", userAuth, async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+
+    const page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 10;
+    limit = limit < 50 ? 50 : limit;
+    let skip = (page - 1) * limit;
+
+    const connectionRequestId = await ConnectionRequestModel.find({
+      $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }],
+    }).select("fromUserId toUserId");
+
+    const hiddenUserFromFeed = new Set();
+    connectionRequestId.forEach((req) => {
+      hiddenUserFromFeed.add(req.fromUserId.toString());
+      hiddenUserFromFeed.add(req.toUserId.toString());
+    });
+    const users = await User.find({
+      $and: [
+        { _id: { $nin: Array.from(hiddenUserFromFeed) } },
+        { _id: { $ne: loggedInUser._id } },
+      ],
+    })
+      .select(USER_SAFE_DATA)
+      .skip(skip)
+      .limit(limit);
+
+    res.json({ message: "Data Fatch Successfully", users });
+  } catch (error) {
+    res.status(404).send({ Error: error.message });
+  }
+});
 module.exports = userRouter;
