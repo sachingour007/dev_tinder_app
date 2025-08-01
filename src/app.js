@@ -3,9 +3,10 @@ const app = express();
 const { connectDB } = require("./config/db");
 const dotenv = require("dotenv").config();
 const cookieParser = require("cookie-parser");
+const cors = require("cors");
 
 //Middlewares
-
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 

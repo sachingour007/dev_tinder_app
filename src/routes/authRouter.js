@@ -5,6 +5,7 @@ const { User } = require("../models/user");
 const authRouter = express.Router();
 const bcrypt = require("bcrypt");
 const { userAuth } = require("../middlewares/authMiddleware");
+const USER_SAFE_DATA = "firstName lastName photoUrl gender age about skills";
 
 //Sign-up API
 authRouter.post("/singup", async (req, res) => {
@@ -44,11 +45,11 @@ authRouter.post("/singup", async (req, res) => {
 });
 
 //login API
-
 authRouter.post("/login", async (req, res) => {
   try {
     const { emailId, password } = req.body;
     const userDetails = await User.findOne({ emailId });
+
     if (!userDetails) {
       throw new Error("Invalid Credentials !!");
     }
@@ -57,13 +58,26 @@ authRouter.post("/login", async (req, res) => {
     if (!isValidPassword) {
       throw new Error("Invalid Credentials !!");
     }
-
     const token = await userDetails.getJwt();
     res.cookie("token", token, {
       secure: true,
       expires: new Date(Date.now() + 8 * 3600000),
     });
-    res.send({ res: "Login sucessfully" });
+
+    const userShareData = {
+      id: userDetails._id,
+      firstName: userDetails.firstName,
+      lastName: userDetails.lastName,
+      photoUrl: userDetails.photoUrl,
+      gender: userDetails.gender,
+      age: userDetails.age,
+      about: userDetails.about,
+      skills: userDetails.skills,
+    };
+    res.json({
+      res: "Login sucessfully",
+      data: userShareData,
+    });
   } catch (error) {
     res.status(404).send({ Error: error.message });
   }
@@ -76,7 +90,6 @@ authRouter.post("/logout", (req, res) => {
 });
 
 //Delete Api
-
 authRouter.delete("/user", async (req, res) => {
   const id = req.body.id;
   try {
