@@ -64,7 +64,7 @@ authRouter.post("/login", async (req, res) => {
       expires: new Date(Date.now() + 8 * 3600000),
     });
 
-    const userShareData = {
+    const user = {
       id: userDetails._id,
       firstName: userDetails.firstName,
       lastName: userDetails.lastName,
@@ -75,8 +75,7 @@ authRouter.post("/login", async (req, res) => {
       skills: userDetails.skills,
     };
     res.json({
-      res: "Login sucessfully",
-      data: userShareData,
+      user,
     });
   } catch (error) {
     res.status(404).send({ Error: error.message });

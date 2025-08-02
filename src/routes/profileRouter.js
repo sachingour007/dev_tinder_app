@@ -7,7 +7,8 @@ const { validatUpdateDetails } = require("../utils/validation");
 profileRouter.get("/profile/view", userAuth, async (req, res) => {
   try {
     const user = req.user;
-    res.status(200).json({ message: "user details", data: user });
+    
+    res.status(200).json({ message: "user details", user });
   } catch (error) {
     res.status(404).send({ Error: error.message });
   }
@@ -35,12 +36,10 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
 
 profileRouter.patch("/profile/update-password", async (req, res) => {
   const password = req.body;
-  const {oldPassword} = password;
-  if(!oldPassword){
-    throw new Error("Please Ente valid Password")
+  const { oldPassword } = password;
+  if (!oldPassword) {
+    throw new Error("Please Ente valid Password");
   }
-  
-
 });
 
 module.exports = profileRouter;
