@@ -51,12 +51,12 @@ authRouter.post("/login", async (req, res) => {
     const userDetails = await User.findOne({ emailId });
 
     if (!userDetails) {
-      throw new Error("Invalid Credentials !!");
+      return res.status(401).send({ error: "Invalid credentials !!" });
     }
     const isValidPassword = await userDetails.validatePassword(password);
 
     if (!isValidPassword) {
-      throw new Error("Invalid Credentials !!");
+      return res.status(401).send({ error: "Invalid credentials !!" });
     }
     const token = await userDetails.getJwt();
     res.cookie("token", token, {
@@ -78,7 +78,7 @@ authRouter.post("/login", async (req, res) => {
       user,
     });
   } catch (error) {
-    res.status(404).send({ Error: error.message });
+    res.status(500).send({ error: "Something went wrong on the server" });
   }
 });
 
