@@ -10,8 +10,6 @@ const validationSingupData = (req) => {
     throw new Error("Please Enter valid Email");
   } else if (!validator.isStrongPassword(password)) {
     throw new Error("Please enter a strong Password!");
-  } else if (skills.lenght > 5) {
-    throw new Error("Please enter skills below 5");
   }
 };
 

@@ -1,6 +1,5 @@
 const express = require("express");
 const { validationSingupData } = require("../utils/validation");
-
 const { User } = require("../models/user");
 const authRouter = express.Router();
 const bcrypt = require("bcrypt");
@@ -8,21 +7,11 @@ const { userAuth } = require("../middlewares/authMiddleware");
 const USER_SAFE_DATA = "firstName lastName photoUrl gender age about skills";
 
 //Sign-up API
-authRouter.post("/singup", async (req, res) => {
+authRouter.post("/signup", async (req, res) => {
   try {
     //Validation
     validationSingupData(req);
-    const {
-      firstName,
-      lastName,
-      emailId,
-      password,
-      age,
-      gender,
-      skills,
-      photoUrl,
-      about,
-    } = req.body;
+    const { firstName, lastName, emailId, password, age, gender } = req.body;
 
     //hash the password
     const passwordHash = await bcrypt.hash(password, 10);
@@ -33,12 +22,17 @@ authRouter.post("/singup", async (req, res) => {
       password: passwordHash,
       age,
       gender,
-      skills,
-      photoUrl,
-      about,
     });
-    await user.save();
-    res.send({ res: "user saved Succesfully!", user });
+
+    const token = await user.getJwt();
+    res.cookie("token", token, {
+      secure: true,
+      httpOnly: true,
+      expires: new Date(Date.now() + 24 * 3600000),
+    });
+
+    const signUser = await user.save();
+    res.send({ res: "user saved Succesfully!", signUser });
   } catch (error) {
     res.status(404).send({ Error: error.message });
   }
@@ -61,7 +55,8 @@ authRouter.post("/login", async (req, res) => {
     const token = await userDetails.getJwt();
     res.cookie("token", token, {
       secure: true,
-      expires: new Date(Date.now() + 8 * 3600000),
+      httpOnly: true,
+      expires: new Date(Date.now() + 24 * 3600000),
     });
 
     const user = {
@@ -84,8 +79,12 @@ authRouter.post("/login", async (req, res) => {
 
 //Logout API
 authRouter.post("/logout", (req, res) => {
-  res.cookie("token", null, { expires: new Date(Date.now()) });
-  res.send("User logout Successfull !!");
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+  });
+  res.status(200).json({ message: "User logout successful!" });
 });
 
 //Delete Api
