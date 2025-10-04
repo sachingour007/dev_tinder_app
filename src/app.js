@@ -8,8 +8,8 @@ const cors = require("cors");
 //Middlewares
 app.use(cors(
   { 
-    // origin: "http://localhost:5173", 
-    origin: "http://54.234.28.228", 
+    origin: "http://localhost:5173", 
+    // origin: "http://54.234.28.228", 
     credentials: true 
   }
 ));
