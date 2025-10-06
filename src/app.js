@@ -6,13 +6,12 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
 //Middlewares
-app.use(cors(
-  { 
-    // origin: "http://localhost:5173", 
-    origin: "http://54.234.28.228", 
-    credentials: true 
-  }
-));
+app.use(
+	cors({
+		origin: ["http://localhost:5173", "http://54.234.28.228"],
+		credentials: true,
+	})
+);
 app.use(express.json());
 app.use(cookieParser());
 
@@ -28,12 +27,12 @@ app.use("/", requestRouter);
 app.use("/", userRouter);
 
 connectDB()
-  .then(() => {
-    console.log("MongoDB is Connected");
-    app.listen(8080, () => {
-      console.log("Hey i am Working on 8080");
-    });
-  })
-  .catch((err) => {
-    console.log("Database is not Connected", err);
-  });
+	.then(() => {
+		console.log("MongoDB is Connected");
+		app.listen(8080, () => {
+			console.log("Hey i am Working on 8080");
+		});
+	})
+	.catch((err) => {
+		console.log("Database is not Connected", err);
+	});
